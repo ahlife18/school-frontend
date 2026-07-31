@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://school-api.onrender.com', 
+  baseURL: 'https://school-api-ahlife.onrender.com',
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 export default api;

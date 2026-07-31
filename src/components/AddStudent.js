@@ -10,7 +10,7 @@ function AddStudent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post('/api/students', {
+      const response = await api.post('api/students', {
         name,
         class: className,
         rollNo: parseInt(rollNo)
