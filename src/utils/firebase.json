@@ -1,0 +1,9 @@
+{
+  "site": "smsp-7948b",
+  "name": "John Doe",
+  "class": "5A",
+  "rollNo": 12,
+  "attendance": {
+    "2026-07-26": "present"
+  }
+}
