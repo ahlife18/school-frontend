@@ -7,29 +7,23 @@ function SubscriptionManager({ children }) {
   const [showModal, setShowModal] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
 
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const response = await api.get('/api/subscription/status');
-        setStatus({
-          isLoading: false,
-          isSubscribed: response.data.isSubscribed,
-          trialEndDate: response.data.trialEndDate,
-          trialExpired: response.data.trialExpired,
-        });
-        // If trial is expired and not subscribed, show modal immediately
-        if (response.data.trialExpired && !response.data.isSubscribed) {
-          setShowModal(true);
-        }
-      } catch (error) {
-        console.error('Failed to fetch subscription status', error);
-        setStatus({ isLoading: false, isSubscribed: false, trialEndDate: null, trialExpired: false });
-      }
-    };
-    fetchStatus();
-  }, []);
+ import { useSchool } from '../context/SchoolContext';
 
-  const handleSubscribe = async () => {
+// Inside the component:
+const { schoolId } = useSchool();
+
+useEffect(() => {
+  const fetchStatus = async () => {
+    try {
+      const response = await api.get(`/api/subscription/status?schoolId=${schoolId}`);
+      // ... rest of the code
+    } catch (error) {
+      // ...
+    }
+  };
+  fetchStatus();
+}, [schoolId]);
+  async function handleSubscribe() {
     setIsActivating(true);
     try {
       // Simulate payment: call activation endpoint
@@ -42,7 +36,7 @@ function SubscriptionManager({ children }) {
     } finally {
       setIsActivating(false);
     }
-  };
+  }
 
   // If still loading, don't show anything
   if (status.isLoading) return null;
