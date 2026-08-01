@@ -13,5 +13,9 @@ export function SchoolProvider({ children }) {
 }
 
 export function useSchool() {
-  return useContext(SchoolContext);
+  const context = useContext(SchoolContext);
+  if (!context) {
+    throw new Error('useSchool must be used within a SchoolProvider');
+  }
+  return context;
 }

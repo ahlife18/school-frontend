@@ -22,9 +22,6 @@ function App() {
     const id = params.get('schoolId');
     if (id) {
       setSchoolId(id);
-    } else {
-      // Redirect to sign-up page if no schoolId is present
-      window.location.href = '/signup';
     }
   }, [setSchoolId]);
 

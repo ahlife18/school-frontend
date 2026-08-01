@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
-import { differenceInDays, differenceInHours, parseISO } from 'date-fns';
 import { useSchool } from '../context/SchoolContext';
 
 function SubscriptionManager({ children }) {
@@ -12,7 +11,6 @@ function SubscriptionManager({ children }) {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        // ✅ FIXED: Append schoolId to the URL
         const response = await api.get(`/api/subscription/status?schoolId=${schoolId}`);
         setStatus({
           isLoading: false,
@@ -34,11 +32,10 @@ function SubscriptionManager({ children }) {
   const handleSubscribe = async () => {
     setIsActivating(true);
     try {
-      // ✅ FIXED: Send schoolId in the body
       await api.post('/api/subscription/activate', { schoolId });
       setStatus(prev => ({ ...prev, isSubscribed: true, trialExpired: false }));
       setShowModal(false);
-      alert('✅ Subscription activated successfully!');
+      alert('✅ Subscription activated!');
     } catch (error) {
       alert('❌ Activation failed: ' + error.message);
     } finally {
@@ -49,12 +46,11 @@ function SubscriptionManager({ children }) {
   if (status.isLoading) return null;
   if (status.isSubscribed) return children;
 
-  const trialEnd = status.trialEndDate ? parseISO(status.trialEndDate) : null;
+  const trialEnd = status.trialEndDate ? new Date(status.trialEndDate) : null;
   const now = new Date();
-  let daysRemaining = 0, hoursRemaining = 0;
+  let daysRemaining = 0;
   if (trialEnd && trialEnd > now) {
-    daysRemaining = differenceInDays(trialEnd, now);
-    hoursRemaining = differenceInHours(trialEnd, now) % 24;
+    daysRemaining = Math.floor((trialEnd - now) / (1000 * 60 * 60 * 24));
   }
 
   const showBanner = !status.isSubscribed && !status.trialExpired && daysRemaining <= 5 && daysRemaining >= 0;
