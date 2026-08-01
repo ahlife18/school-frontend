@@ -11,17 +11,28 @@ function AddStudent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage('');
+    
+    if (!schoolId) {
+      setMessage('❌ Error: School ID is missing. Please ensure you have a valid school link.');
+      return;
+    }
+
     try {
       const response = await api.post('/api/students', {
         name,
         class: className,
         rollNo: parseInt(rollNo),
-        schoolId: schoolId // <-- Include schoolId
+        schoolId: schoolId // <--- This is CRITICAL
       });
-      setMessage(`✅ ${name} added! (ID: ${response.data.id})`);
-      setName(''); setClassName(''); setRollNo('');
+      setMessage(`✅ ${name} added successfully!`);
+      setName('');
+      setClassName('');
+      setRollNo('');
     } catch (error) {
-      setMessage('❌ Error: ' + error.message);
+      // Check if we got a specific error message from the backend
+      const errorMsg = error.response?.data?.error || error.message;
+      setMessage(`❌ Error: ${errorMsg}`);
     }
   };
 
@@ -63,7 +74,7 @@ function AddStudent() {
           ➕ Add Student
         </button>
       </form>
-      {message && <p style={{ marginTop: '10px', fontWeight: 'bold', color: '#2c3e50' }}>{message}</p>}
+      {message && <p style={{ marginTop: '10px', fontWeight: 'bold', color: message.includes('✅') ? '#27ae60' : '#e74c3c' }}>{message}</p>}
     </div>
   );
 }
