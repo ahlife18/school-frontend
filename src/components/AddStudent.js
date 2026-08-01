@@ -1,20 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../services/api';
-import { useSchool } from '../context/SchoolContext';
 
 function AddStudent() {
   const [name, setName] = useState('');
   const [className, setClassName] = useState('');
   const [rollNo, setRollNo] = useState('');
   const [message, setMessage] = useState('');
-  const { schoolId } = useSchool();
+  const [schoolId, setSchoolId] = useState('');
+
+  // ✅ Extract schoolId directly from the URL when the component loads
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('schoolId');
+    if (id) {
+      setSchoolId(id);
+      console.log("✅ Using schoolId:", id); // Optional: check browser console
+    } else {
+      setMessage('❌ Error: No school ID found in URL. Please use a valid school link.');
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
     
     if (!schoolId) {
-      setMessage('❌ Error: School ID is missing. Please ensure you have a valid school link.');
+      setMessage('❌ Error: School ID is missing. Please use a valid school link.');
       return;
     }
 
@@ -23,14 +34,13 @@ function AddStudent() {
         name,
         class: className,
         rollNo: parseInt(rollNo),
-        schoolId: schoolId // <--- This is CRITICAL
+        schoolId: schoolId  // ✅ This is now guaranteed to be present
       });
       setMessage(`✅ ${name} added successfully!`);
       setName('');
       setClassName('');
       setRollNo('');
     } catch (error) {
-      // Check if we got a specific error message from the backend
       const errorMsg = error.response?.data?.error || error.message;
       setMessage(`❌ Error: ${errorMsg}`);
     }
@@ -45,7 +55,14 @@ function AddStudent() {
             onChange={e => setName(e.target.value)} 
             placeholder="👤 Student Name" 
             required 
-            style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '14px', outline: 'none' }}
+            style={{ 
+              width: '100%', 
+              padding: '10px', 
+              borderRadius: '10px', 
+              border: '1px solid #ddd', 
+              fontSize: '14px', 
+              outline: 'none' 
+            }}
           />
         </div>
         <div style={{ marginBottom: '12px' }}>
@@ -54,7 +71,14 @@ function AddStudent() {
             onChange={e => setClassName(e.target.value)} 
             placeholder="📚 Class (e.g. 5A)" 
             required 
-            style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '14px', outline: 'none' }}
+            style={{ 
+              width: '100%', 
+              padding: '10px', 
+              borderRadius: '10px', 
+              border: '1px solid #ddd', 
+              fontSize: '14px', 
+              outline: 'none' 
+            }}
           />
         </div>
         <div style={{ marginBottom: '12px' }}>
@@ -64,17 +88,42 @@ function AddStudent() {
             placeholder="🔢 Roll Number" 
             required 
             type="number"
-            style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '14px', outline: 'none' }}
+            style={{ 
+              width: '100%', 
+              padding: '10px', 
+              borderRadius: '10px', 
+              border: '1px solid #ddd', 
+              fontSize: '14px', 
+              outline: 'none' 
+            }}
           />
         </div>
         <button 
           type="submit" 
-          style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}
+          style={{ 
+            width: '100%', 
+            padding: '12px', 
+            background: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '10px', 
+            cursor: 'pointer', 
+            fontSize: '16px', 
+            fontWeight: 'bold' 
+          }}
         >
           ➕ Add Student
         </button>
       </form>
-      {message && <p style={{ marginTop: '10px', fontWeight: 'bold', color: message.includes('✅') ? '#27ae60' : '#e74c3c' }}>{message}</p>}
+      {message && (
+        <p style={{ 
+          marginTop: '10px', 
+          fontWeight: 'bold', 
+          color: message.includes('✅') ? '#27ae60' : '#e74c3c' 
+        }}>
+          {message}
+        </p>
+      )}
     </div>
   );
 }
