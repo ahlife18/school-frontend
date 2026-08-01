@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
+import { useSchool } from '../context/SchoolContext';
 
 function StatsCard() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const { schoolId } = useSchool();
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await api.get('/api/students');
+        // ✅ FIXED: Append schoolId to the URL
+        const response = await api.get(`/api/students?schoolId=${schoolId}`);
         setStudents(response.data);
       } catch (error) {
         console.error('Error fetching students:', error);
@@ -19,7 +21,7 @@ function StatsCard() {
       }
     };
     fetchStudents();
-  }, []);
+  }, [schoolId]);
 
   if (loading) return <div>Loading stats...</div>;
 
@@ -29,12 +31,7 @@ function StatsCard() {
   const notMarked = total - present - absent;
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-      gap: '15px',
-      marginBottom: '20px'
-    }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', marginBottom: '20px' }}>
       <div style={{ backgroundColor: '#3498db', color: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
         <h3 style={{ margin: 0, fontSize: '24px' }}>{total}</h3>
         <p style={{ margin: 0, fontSize: '14px' }}>Total Students</p>

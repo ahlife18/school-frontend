@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Login from './components/Login';
 import AddStudent from './components/AddStudent';
 import StudentList from './components/StudentList';
@@ -7,12 +7,26 @@ import StatsCard from './components/StatsCard';
 import PrincipalDashboard from './components/PrincipalDashboard';
 import ParentPortal from './components/ParentPortal';
 import UploadResult from './components/UploadResult';
-import SubscriptionManager from './components/SubscriptionManager'; // ✅ NEW IMPORT
+import SubscriptionManager from './components/SubscriptionManager';
+import { useSchool } from './context/SchoolContext';
 
 function App() {
   const [user, setUser] = useState(null);
   const [isPrincipal, setIsPrincipal] = useState(false);
   const [view, setView] = useState('dashboard');
+  const { setSchoolId } = useSchool();
+
+  // Read schoolId from URL on load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('schoolId');
+    if (id) {
+      setSchoolId(id);
+    } else {
+      // Redirect to sign-up page if no schoolId is present
+      window.location.href = '/signup';
+    }
+  }, [setSchoolId]);
 
   const handleLogin = (user) => {
     setUser(user);

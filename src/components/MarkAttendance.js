@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useSchool } from '../context/SchoolContext';
 
 function MarkAttendance() {
   const [students, setStudents] = useState([]);
@@ -8,13 +9,14 @@ function MarkAttendance() {
   const [status, setStatus] = useState('present');
   const [message, setMessage] = useState('');
   const [classFilter, setClassFilter] = useState('');
+  const { schoolId } = useSchool();
 
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await api.get('/api/students');
+        const response = await api.get(`/api/students?schoolId=${schoolId}`);
         setStudents(response.data);
         setFilteredStudents(response.data);
       } catch (error) {
@@ -22,20 +24,17 @@ function MarkAttendance() {
       }
     };
     fetchStudents();
-  }, []);
+  }, [schoolId]);
 
-  // When class filter changes, update filtered students
   useEffect(() => {
     if (classFilter === '') {
       setFilteredStudents(students);
     } else {
       setFilteredStudents(students.filter(s => s.class === classFilter));
     }
-    // Reset selected student when filter changes
     setSelectedStudent('');
   }, [classFilter, students]);
 
-  // Get unique classes from students
   const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
 
   const handleSubmit = async (e) => {
@@ -49,13 +48,12 @@ function MarkAttendance() {
       await api.post('/api/attendance', {
         studentId: selectedStudent,
         date: today,
-        status: status
+        status: status,
+        schoolId: schoolId // <-- This is CRITICAL!
       });
       setMessage(`✅ Marked as ${status} for today!`);
-      // Refresh student list to update attendance data
-      const response = await api.get('/api/students');
+      const response = await api.get(`/api/students?schoolId=${schoolId}`);
       setStudents(response.data);
-      // Reapply filter
       if (classFilter) {
         setFilteredStudents(response.data.filter(s => s.class === classFilter));
       } else {
@@ -66,36 +64,24 @@ function MarkAttendance() {
     }
   };
 
-  // ✨ Parent Notification
   const notifyParent = (studentName) => {
     if (!selectedStudent) {
       alert('Please select a student first!');
       return;
     }
-    
-    const message = `Dear Parent, your child ${studentName} was marked as ${status.toUpperCase()} today (${today}). Please contact the school if you have any questions. - School Management System`;
-    
+    const message = `Dear Parent, your child ${studentName} was marked as ${status.toUpperCase()} today (${today}). - School System`;
     navigator.clipboard.writeText(message);
-    alert('✅ Parent notification copied to clipboard! Just paste it into WhatsApp or SMS.');
+    alert('✅ Copied to clipboard! Paste into WhatsApp.');
   };
 
   return (
     <div style={{ fontFamily: 'Segoe UI, Arial, sans-serif' }}>
       <form onSubmit={handleSubmit}>
-        {/* ✨ Class Filter Dropdown */}
         <div style={{ marginBottom: '12px' }}>
           <select 
             value={classFilter} 
             onChange={(e) => setClassFilter(e.target.value)}
-            style={{ 
-              width: '100%', 
-              padding: '10px', 
-              borderRadius: '10px', 
-              border: '1px solid #ddd',
-              fontSize: '14px',
-              outline: 'none',
-              marginBottom: '8px'
-            }}
+            style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #ddd' }}
           >
             <option value="">-- All Classes --</option>
             {uniqueClasses.map(cls => (
@@ -111,14 +97,7 @@ function MarkAttendance() {
           <select 
             value={selectedStudent} 
             onChange={(e) => setSelectedStudent(e.target.value)}
-            style={{ 
-              width: '100%', 
-              padding: '10px', 
-              borderRadius: '10px', 
-              border: '1px solid #ddd',
-              fontSize: '14px',
-              outline: 'none'
-            }}
+            style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #ddd' }}
           >
             <option value="">-- Select Student --</option>
             {filteredStudents.map(s => (
@@ -141,49 +120,17 @@ function MarkAttendance() {
 
         <button 
           type="submit" 
-          style={{ 
-            width: '100%', 
-            padding: '12px', 
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}
+          style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
         >
           📋 Mark Attendance
         </button>
       </form>
-
-      {message && <p style={{ marginTop: '10px', fontWeight: 'bold', color: '#2c3e50' }}>{message}</p>}
-
-      {/* Parent Notification Button */}
+      {message && <p style={{ marginTop: '10px', fontWeight: 'bold' }}>{message}</p>}
       {selectedStudent && (
         <div style={{ marginTop: '15px' }}>
-          <button
-            onClick={() => {
-              const student = filteredStudents.find(s => s.id === selectedStudent);
-              if (student) notifyParent(student.name);
-            }}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: 'linear-gradient(135deg, #25D366 0%, #075E54 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '10px',
-              cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: 'bold'
-            }}
-          >
-            📲 Notify Parent via WhatsApp
+          <button onClick={() => { const student = filteredStudents.find(s => s.id === selectedStudent); if (student) notifyParent(student.name); }} style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #25D366 0%, #075E54 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>
+            📲 Notify Parent
           </button>
-          <p style={{ fontSize: '12px', color: '#888', marginTop: '5px' }}>
-            Copies message to clipboard. Paste it into WhatsApp.
-          </p>
         </div>
       )}
     </div>
