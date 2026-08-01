@@ -29,18 +29,32 @@ function SubscriptionManager({ children }) {
     fetchStatus();
   }, [schoolId]);
 
-  const handleSubscribe = async () => {
-    setIsActivating(true);
-    try {
-      await api.post('/api/subscription/activate', { schoolId });
-      setStatus(prev => ({ ...prev, isSubscribed: true, trialExpired: false }));
-      setShowModal(false);
-      alert('✅ Subscription activated!');
-    } catch (error) {
-      alert('❌ Activation failed: ' + error.message);
-    } finally {
-      setIsActivating(false);
-    }
+  // 💳 PAYSTACK PAYMENT HANDLER (₦100,000/year)
+  const handlePaystackPayment = () => {
+    const paystack = new window.PaystackPop();
+    paystack.newTransaction({
+      key: 'pk_live_827aae9b1ef3daa5bec39d6a04107e7131631541',
+      email: 'kolawoleemanuel63@gmail.com', // Your email for receipts
+      amount: 10000000, // ₦100,000.00 (Paystack expects kobo: 100,000 × 100 = 10,000,000)
+      currency: 'NGN',
+      callback: async (response) => {
+        // Payment successful!
+        setIsActivating(true);
+        try {
+          await api.post('/api/subscription/activate', { schoolId });
+          setStatus(prev => ({ ...prev, isSubscribed: true, trialExpired: false }));
+          setShowModal(false);
+          alert('✅ Payment successful! Your school subscription is now active for 1 year.');
+        } catch (error) {
+          alert('❌ Activation failed: ' + error.message);
+        } finally {
+          setIsActivating(false);
+        }
+      },
+      onClose: () => {
+        alert('Payment window closed. You can subscribe anytime.');
+      }
+    });
   };
 
   if (status.isLoading) return null;
@@ -70,8 +84,12 @@ function SubscriptionManager({ children }) {
             <h2 style={{ color: '#e74c3c' }}>{status.trialExpired ? '🚫 Trial Expired' : '💳 Subscribe Now'}</h2>
             <p>{status.trialExpired ? 'Upgrade to keep using the system.' : 'Secure your school data with a subscription.'}</p>
             <div style={{ marginTop: '30px' }}>
-              <button onClick={handleSubscribe} disabled={isActivating} style={{ padding: '12px 30px', backgroundColor: '#27ae60', color: 'white', border: 'none', borderRadius: '10px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}>
-                {isActivating ? 'Processing...' : '🔓 Subscribe Now'}
+              <button
+                onClick={handlePaystackPayment}
+                disabled={isActivating}
+                style={{ padding: '12px 30px', backgroundColor: '#27ae60', color: 'white', border: 'none', borderRadius: '10px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                {isActivating ? 'Processing...' : `🔓 Subscribe ₦100,000 / year`}
               </button>
             </div>
             {!status.trialExpired && (
