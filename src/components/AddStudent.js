@@ -8,13 +8,12 @@ function AddStudent() {
   const [message, setMessage] = useState('');
   const [schoolId, setSchoolId] = useState('');
 
-  // ✅ Extract schoolId directly from the URL when the component loads
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('schoolId');
     if (id) {
       setSchoolId(id);
-      console.log("✅ Using schoolId:", id); // Optional: check browser console
+      console.log("✅ Using schoolId:", id);
     } else {
       setMessage('❌ Error: No school ID found in URL. Please use a valid school link.');
     }
@@ -30,11 +29,11 @@ function AddStudent() {
     }
 
     try {
-      const response = await api.post('/api/students', {
+      await api.post('/api/students', {
         name,
         class: className,
         rollNo: parseInt(rollNo),
-        schoolId: schoolId  // ✅ This is now guaranteed to be present
+        schoolId: schoolId
       });
       setMessage(`✅ ${name} added successfully!`);
       setName('');
@@ -55,14 +54,7 @@ function AddStudent() {
             onChange={e => setName(e.target.value)} 
             placeholder="👤 Student Name" 
             required 
-            style={{ 
-              width: '100%', 
-              padding: '10px', 
-              borderRadius: '10px', 
-              border: '1px solid #ddd', 
-              fontSize: '14px', 
-              outline: 'none' 
-            }}
+            style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '14px', outline: 'none' }}
           />
         </div>
         <div style={{ marginBottom: '12px' }}>
@@ -71,14 +63,7 @@ function AddStudent() {
             onChange={e => setClassName(e.target.value)} 
             placeholder="📚 Class (e.g. 5A)" 
             required 
-            style={{ 
-              width: '100%', 
-              padding: '10px', 
-              borderRadius: '10px', 
-              border: '1px solid #ddd', 
-              fontSize: '14px', 
-              outline: 'none' 
-            }}
+            style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '14px', outline: 'none' }}
           />
         </div>
         <div style={{ marginBottom: '12px' }}>
@@ -88,42 +73,17 @@ function AddStudent() {
             placeholder="🔢 Roll Number" 
             required 
             type="number"
-            style={{ 
-              width: '100%', 
-              padding: '10px', 
-              borderRadius: '10px', 
-              border: '1px solid #ddd', 
-              fontSize: '14px', 
-              outline: 'none' 
-            }}
+            style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '14px', outline: 'none' }}
           />
         </div>
         <button 
           type="submit" 
-          style={{ 
-            width: '100%', 
-            padding: '12px', 
-            background: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '10px', 
-            cursor: 'pointer', 
-            fontSize: '16px', 
-            fontWeight: 'bold' 
-          }}
+          style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}
         >
           ➕ Add Student
         </button>
       </form>
-      {message && (
-        <p style={{ 
-          marginTop: '10px', 
-          fontWeight: 'bold', 
-          color: message.includes('✅') ? '#27ae60' : '#e74c3c' 
-        }}>
-          {message}
-        </p>
-      )}
+      {message && <p style={{ marginTop: '10px', fontWeight: 'bold', color: message.includes('✅') ? '#27ae60' : '#e74c3c' }}>{message}</p>}
     </div>
   );
 }

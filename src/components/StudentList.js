@@ -11,19 +11,18 @@ function StudentList() {
   const { schoolId } = useSchool();
   const today = new Date().toISOString().split('T')[0];
 
-  const fetchStudents = async () => {
-    try {
-      const response = await api.get(`/api/students?schoolId=${schoolId}`);
-      setStudents(response.data);
-      setFilteredStudents(response.data);
-    } catch (error) {
-      console.error('Error fetching students:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await api.get(`/api/students?schoolId=${schoolId}`);
+        setStudents(response.data);
+        setFilteredStudents(response.data);
+      } catch (error) {
+        console.error('Error fetching students:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchStudents();
   }, [schoolId]);
 
@@ -42,9 +41,12 @@ function StudentList() {
     setDeleting(true);
     try {
       await api.delete(`/api/students/${id}`, {
-        data: { schoolId: schoolId } // <-- Pass schoolId in body
+        data: { schoolId: schoolId }
       });
-      fetchStudents();
+      // Reload students after delete
+      const response = await api.get(`/api/students?schoolId=${schoolId}`);
+      setStudents(response.data);
+      setFilteredStudents(response.data);
     } catch (error) {
       alert('Error deleting student: ' + error.message);
     } finally {
@@ -76,7 +78,18 @@ function StudentList() {
             onBlur={(e) => e.target.style.borderColor = '#ddd'}
           />
           <button 
-            onClick={fetchStudents}
+            onClick={() => {
+              const fetchStudents = async () => {
+                try {
+                  const response = await api.get(`/api/students?schoolId=${schoolId}`);
+                  setStudents(response.data);
+                  setFilteredStudents(response.data);
+                } catch (error) {
+                  console.error('Error fetching students:', error);
+                }
+              };
+              fetchStudents();
+            }}
             style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', transition: 'transform 0.2s' }}
             onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
             onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
