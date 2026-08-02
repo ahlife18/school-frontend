@@ -30,7 +30,6 @@ function SubscriptionManager({ children }) {
     fetchStatus();
   }, [schoolId]);
 
-  // Check if Paystack is loaded
   useEffect(() => {
     const checkPaystack = setInterval(() => {
       if (window.PaystackPop) {
@@ -43,7 +42,6 @@ function SubscriptionManager({ children }) {
     return () => clearInterval(checkPaystack);
   }, []);
 
-  // 💳 THE BULLETPROOF PAYMENT HANDLER
   const handlePaystackPayment = () => {
     if (!paystackLoaded) {
       alert('⚠️ Paystack is still loading. Please wait a moment and try again.');
@@ -51,26 +49,30 @@ function SubscriptionManager({ children }) {
     }
 
     try {
-      // ✅ ULTIMATE FIX: Use window.PaystackPop.setup() instead of new PaystackPop()
+      // ✅ FIXED: Used 'function' instead of 'async' arrow function
       window.PaystackPop.setup({
         key: 'pk_live_827aae9b1ef3daa5bec39d6a04107e7131631541',
         email: 'kolawoleemanuel63@gmail.com',
         amount: 10000000,
         currency: 'NGN',
-        callback: async (response) => {
-          setIsActivating(true);
-          try {
-            await api.post('/api/subscription/activate', { schoolId });
-            setStatus(prev => ({ ...prev, isSubscribed: true, trialExpired: false }));
-            setShowModal(false);
-            alert('✅ Payment successful! Subscription active.');
-          } catch (error) {
-            alert('❌ Activation failed: ' + error.message);
-          } finally {
-            setIsActivating(false);
-          }
+        callback: function(response) {
+          // ✅ We handle the async logic inside the function
+          const activateSubscription = async () => {
+            setIsActivating(true);
+            try {
+              await api.post('/api/subscription/activate', { schoolId });
+              setStatus(prev => ({ ...prev, isSubscribed: true, trialExpired: false }));
+              setShowModal(false);
+              alert('✅ Payment successful! Subscription active.');
+            } catch (error) {
+              alert('❌ Activation failed: ' + error.message);
+            } finally {
+              setIsActivating(false);
+            }
+          };
+          activateSubscription();
         },
-        onClose: () => {
+        onClose: function() {
           alert('Payment window closed.');
         }
       });
