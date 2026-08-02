@@ -30,7 +30,7 @@ function SubscriptionManager({ children }) {
     fetchStatus();
   }, [schoolId]);
 
-  // ✅ CHECK IF PAYSTACK IS LOADED
+  // Check if Paystack is loaded
   useEffect(() => {
     const checkPaystack = setInterval(() => {
       if (window.PaystackPop) {
@@ -43,6 +43,7 @@ function SubscriptionManager({ children }) {
     return () => clearInterval(checkPaystack);
   }, []);
 
+  // 💳 THE BULLETPROOF PAYMENT HANDLER
   const handlePaystackPayment = () => {
     if (!paystackLoaded) {
       alert('⚠️ Paystack is still loading. Please wait a moment and try again.');
@@ -50,8 +51,8 @@ function SubscriptionManager({ children }) {
     }
 
     try {
-      const paystack = new window.PaystackPop();
-      paystack.newTransaction({
+      // ✅ ULTIMATE FIX: Use window.PaystackPop.setup() instead of new PaystackPop()
+      window.PaystackPop.setup({
         key: 'pk_live_827aae9b1ef3daa5bec39d6a04107e7131631541',
         email: 'kolawoleemanuel63@gmail.com',
         amount: 10000000,
@@ -122,11 +123,6 @@ function SubscriptionManager({ children }) {
               >
                 {!paystackLoaded ? '⏳ Loading Paystack...' : isActivating ? 'Processing...' : `🔓 Subscribe ₦100,000 / year`}
               </button>
-              {!paystackLoaded && (
-                <p style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}>
-                  If this stays stuck, check your `public/index.html` for the Paystack script.
-                </p>
-              )}
             </div>
             {!status.trialExpired && (
               <button onClick={() => setShowModal(false)} style={{ marginTop: '15px', backgroundColor: 'transparent', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }}>
