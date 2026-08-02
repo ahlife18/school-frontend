@@ -6,6 +6,7 @@ function SubscriptionManager({ children }) {
   const [status, setStatus] = useState({ isLoading: true, isSubscribed: false, trialEndDate: null, trialExpired: false });
   const [showModal, setShowModal] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
+  const [paystackLoaded, setPaystackLoaded] = useState(false);
   const { schoolId } = useSchool();
 
   useEffect(() => {
@@ -29,32 +30,52 @@ function SubscriptionManager({ children }) {
     fetchStatus();
   }, [schoolId]);
 
-  // 💳 PAYSTACK PAYMENT HANDLER (₦100,000/year)
-  const handlePaystackPayment = () => {
-    const paystack = new window.PaystackPop();
-    paystack.newTransaction({
-      key: 'pk_live_827aae9b1ef3daa5bec39d6a04107e7131631541',
-      email: 'kolawoleemanuel63@gmail.com', // Your email for receipts
-      amount: 10000000, // ₦100,000.00 (Paystack expects kobo: 100,000 × 100 = 10,000,000)
-      currency: 'NGN',
-      callback: async (response) => {
-        // Payment successful!
-        setIsActivating(true);
-        try {
-          await api.post('/api/subscription/activate', { schoolId });
-          setStatus(prev => ({ ...prev, isSubscribed: true, trialExpired: false }));
-          setShowModal(false);
-          alert('✅ Payment successful! Your school subscription is now active for 1 year.');
-        } catch (error) {
-          alert('❌ Activation failed: ' + error.message);
-        } finally {
-          setIsActivating(false);
-        }
-      },
-      onClose: () => {
-        alert('Payment window closed. You can subscribe anytime.');
+  // ✅ CHECK IF PAYSTACK IS LOADED
+  useEffect(() => {
+    const checkPaystack = setInterval(() => {
+      if (window.PaystackPop) {
+        setPaystackLoaded(true);
+        clearInterval(checkPaystack);
+        console.log('✅ Paystack loaded successfully');
       }
-    });
+    }, 500);
+
+    return () => clearInterval(checkPaystack);
+  }, []);
+
+  const handlePaystackPayment = () => {
+    if (!paystackLoaded) {
+      alert('⚠️ Paystack is still loading. Please wait a moment and try again.');
+      return;
+    }
+
+    try {
+      const paystack = new window.PaystackPop();
+      paystack.newTransaction({
+        key: 'pk_live_827aae9b1ef3daa5bec39d6a04107e7131631541',
+        email: 'kolawoleemanuel63@gmail.com',
+        amount: 10000000,
+        currency: 'NGN',
+        callback: async (response) => {
+          setIsActivating(true);
+          try {
+            await api.post('/api/subscription/activate', { schoolId });
+            setStatus(prev => ({ ...prev, isSubscribed: true, trialExpired: false }));
+            setShowModal(false);
+            alert('✅ Payment successful! Subscription active.');
+          } catch (error) {
+            alert('❌ Activation failed: ' + error.message);
+          } finally {
+            setIsActivating(false);
+          }
+        },
+        onClose: () => {
+          alert('Payment window closed.');
+        }
+      });
+    } catch (error) {
+      alert('❌ Error launching Paystack: ' + error.message);
+    }
   };
 
   if (status.isLoading) return null;
@@ -86,11 +107,26 @@ function SubscriptionManager({ children }) {
             <div style={{ marginTop: '30px' }}>
               <button
                 onClick={handlePaystackPayment}
-                disabled={isActivating}
-                style={{ padding: '12px 30px', backgroundColor: '#27ae60', color: 'white', border: 'none', borderRadius: '10px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}
+                disabled={isActivating || !paystackLoaded}
+                style={{ 
+                  padding: '12px 30px', 
+                  backgroundColor: '#27ae60', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '10px', 
+                  fontSize: '18px', 
+                  fontWeight: 'bold', 
+                  cursor: 'pointer',
+                  opacity: (!paystackLoaded || isActivating) ? 0.7 : 1
+                }}
               >
-                {isActivating ? 'Processing...' : `🔓 Subscribe ₦100,000 / year`}
+                {!paystackLoaded ? '⏳ Loading Paystack...' : isActivating ? 'Processing...' : `🔓 Subscribe ₦100,000 / year`}
               </button>
+              {!paystackLoaded && (
+                <p style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}>
+                  If this stays stuck, check your `public/index.html` for the Paystack script.
+                </p>
+              )}
             </div>
             {!status.trialExpired && (
               <button onClick={() => setShowModal(false)} style={{ marginTop: '15px', backgroundColor: 'transparent', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }}>
