@@ -30,6 +30,7 @@ function SubscriptionManager({ children }) {
     fetchStatus();
   }, [schoolId]);
 
+  // ✅ CHECK IF PAYSTACK IS LOADED
   useEffect(() => {
     const checkPaystack = setInterval(() => {
       if (window.PaystackPop) {
@@ -49,16 +50,26 @@ function SubscriptionManager({ children }) {
     }
 
     try {
-      // 🔥 ULTIMATE SIMPLIFIED PAYSTACK CALL
-      window.PaystackPop.setup({
+      const paystack = new window.PaystackPop();
+      paystack.newTransaction({
         key: 'pk_live_827aae9b1ef3daa5bec39d6a04107e7131631541',
         email: 'kolawoleemanuel63@gmail.com',
         amount: 10000000,
         currency: 'NGN',
-        callback: function(response) {
-          alert('✅ Payment successful! Response: ' + JSON.stringify(response));
+        callback: async (response) => {
+          setIsActivating(true);
+          try {
+            await api.post('/api/subscription/activate', { schoolId });
+            setStatus(prev => ({ ...prev, isSubscribed: true, trialExpired: false }));
+            setShowModal(false);
+            alert('✅ Payment successful! Subscription active.');
+          } catch (error) {
+            alert('❌ Activation failed: ' + error.message);
+          } finally {
+            setIsActivating(false);
+          }
         },
-        onClose: function() {
+        onClose: () => {
           alert('Payment window closed.');
         }
       });
@@ -111,6 +122,11 @@ function SubscriptionManager({ children }) {
               >
                 {!paystackLoaded ? '⏳ Loading Paystack...' : isActivating ? 'Processing...' : `🔓 Subscribe ₦100,000 / year`}
               </button>
+              {!paystackLoaded && (
+                <p style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}>
+                  If this stays stuck, check your `public/index.html` for the Paystack script.
+                </p>
+              )}
             </div>
             {!status.trialExpired && (
               <button onClick={() => setShowModal(false)} style={{ marginTop: '15px', backgroundColor: 'transparent', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }}>
