@@ -8,6 +8,7 @@ import PrincipalDashboard from './components/PrincipalDashboard';
 import ParentPortal from './components/ParentPortal';
 import UploadResult from './components/UploadResult';
 import SubscriptionManager from './components/SubscriptionManager';
+import SchoolSignUp from './components/SchoolSignUp'; // ✨ NEW IMPORT
 import { useSchool } from './context/SchoolContext';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
   const [view, setView] = useState('dashboard');
   const { setSchoolId } = useSchool();
 
+  // ✅ Read schoolId from URL on load
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('schoolId');
@@ -42,6 +44,14 @@ function App() {
     setView('dashboard');
   };
 
+  // ✅ If no schoolId is found and user is not logged in, redirect to Sign-Up
+  const params = new URLSearchParams(window.location.search);
+  const schoolIdFromUrl = params.get('schoolId');
+
+  if (!schoolIdFromUrl && !user) {
+    return <SchoolSignUp />;
+  }
+
   if (!user) {
     return <Login onLogin={handleLogin} onPrincipalLogin={handlePrincipalLogin} />;
   }
@@ -49,30 +59,28 @@ function App() {
   return (
     <SubscriptionManager>
       <div style={{ 
-        fontFamily: 'Segoe UI, Inter, -apple-system, Arial, sans-serif',
+        fontFamily: 'Segoe UI, Arial, sans-serif',
         minHeight: '100vh',
         padding: '20px',
-        // 🌐 ELEGANT DEEP BACKGROUND (Subtle gradient, not plain grey)
-        background: 'linear-gradient(145deg, #eef2f5 0%, #d9e2ec 100%)'
+        background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
       }}>
-        
-        {/* Top Header Bar - DEEP NAVY GRADIENT (Premium Look) */}
+        {/* Top Header Bar */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          marginBottom: '25px' 
+          marginBottom: '20px' 
         }}>
           <div style={{ 
-            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-            padding: '18px 28px', 
-            borderRadius: '16px', 
+            background: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
+            padding: '15px 25px', 
+            borderRadius: '15px', 
             flex: 1, 
-            marginRight: '20px',
-            boxShadow: '0 8px 30px rgba(15, 23, 42, 0.2)'
+            marginRight: '15px',
+            boxShadow: '0 4px 15px rgba(0, 114, 255, 0.4)'
           }}>
-            <h1 style={{ margin: 0, color: 'white', fontSize: '26px', fontWeight: 700, letterSpacing: '-0.5px' }}>🏫 School Management System</h1>
-            <p style={{ margin: '5px 0 0', color: '#94a3b8', fontSize: '14px' }}>
+            <h1 style={{ margin: 0, color: 'white' }}>🏫 School Management System</h1>
+            <p style={{ margin: '5px 0 0', color: 'rgba(255,255,255,0.9)' }}>
               {isPrincipal ? '👑 Principal Mode' : '👨‍🏫 Teacher Mode'}
             </p>
           </div>
@@ -80,36 +88,39 @@ function App() {
             <button
               onClick={() => setView(view === 'parent' ? 'dashboard' : 'parent')}
               style={{
-                padding: '10px 20px',
-                backgroundColor: 'white',
-                color: '#0f172a',
+                padding: '12px 20px',
+                backgroundColor: '#fff',
+                color: '#2c3e50',
                 border: 'none',
                 borderRadius: '10px',
                 cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '14px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                transition: 'all 0.2s'
+                fontWeight: 'bold',
+                fontSize: '14px'
               }}
             >
-              {view === 'parent' ? '📊 Dashboard' : '👨‍👩‍👧 Parent Portal'}
+              {view === 'parent' ? '📊 Back to Dashboard' : '👨‍👩‍👧 Parent Portal'}
             </button>
             <button
               onClick={handleLogout}
               style={{
-                padding: '10px 20px',
-                backgroundColor: '#ef4444',
-                color: 'white',
-                border: 'none',
+                padding: '12px 25px',
+                backgroundColor: '#fff',
+                color: '#e74c3c',
+                border: '2px solid #e74c3c',
                 borderRadius: '10px',
                 cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '14px',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
-                transition: 'transform 0.2s'
+                fontWeight: 'bold',
+                fontSize: '16px',
+                transition: 'all 0.3s'
               }}
-              onMouseEnter={(e) => e.target.style.transform = 'scale(1.02)'}
-              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#e74c3c';
+                e.target.style.color = '#fff';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#fff';
+                e.target.style.color = '#e74c3c';
+              }}
             >
               🚪 Logout
             </button>
@@ -122,82 +133,42 @@ function App() {
           <PrincipalDashboard />
         ) : (
           <>
-            <div style={{ maxWidth: '800px', margin: '0 auto 25px' }}>
+            <div style={{ maxWidth: '800px', margin: '0 auto 20px' }}>
               <StatsCard />
             </div>
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
               gap: '25px',
               maxWidth: '1200px',
               margin: '0 auto'
             }}>
-              {/* Add Student Box - GLASSMORPHISM STYLE */}
-              <div style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(10px)',
-                padding: '25px', 
-                borderRadius: '20px', 
-                boxShadow: '0 10px 40px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03)',
-                border: '1px solid rgba(255,255,255,0.8)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                  <span style={{ fontSize: '22px' }}>➕</span>
-                  <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>Add New Student</h3>
+              <div style={{ background: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', padding: '25px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(161, 140, 209, 0.4)', color: 'white' }}>
+                <h3 style={{ margin: '0 0 15px', fontSize: '20px' }}>➕ Add New Student</h3>
+                <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '15px', padding: '15px' }}>
+                  <AddStudent />
                 </div>
-                <AddStudent />
               </div>
-
-              {/* Mark Attendance Box - GLASSMORPHISM STYLE */}
-              <div style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(10px)',
-                padding: '25px', 
-                borderRadius: '20px', 
-                boxShadow: '0 10px 40px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03)',
-                border: '1px solid rgba(255,255,255,0.8)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                  <span style={{ fontSize: '22px' }}>📋</span>
-                  <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>Mark Attendance</h3>
+              <div style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', padding: '25px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(245, 87, 108, 0.4)', color: 'white' }}>
+                <h3 style={{ margin: '0 0 15px', fontSize: '20px' }}>📋 Mark Attendance</h3>
+                <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '15px', padding: '15px' }}>
+                  <MarkAttendance />
                 </div>
-                <MarkAttendance />
               </div>
-              
-              {/* Upload Results Box - GLASSMORPHISM STYLE */}
-              <div style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                backdropFilter: 'blur(10px)',
-                padding: '25px', 
-                borderRadius: '20px', 
-                boxShadow: '0 10px 40px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03)',
-                border: '1px solid rgba(255,255,255,0.8)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                  <span style={{ fontSize: '22px' }}>📤</span>
-                  <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>Upload Results</h3>
+              <div style={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', padding: '25px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(67, 233, 123, 0.4)', color: 'white' }}>
+                <h3 style={{ margin: '0 0 15px', fontSize: '20px' }}>📤 Upload Results</h3>
+                <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '15px', padding: '15px' }}>
+                  <UploadResult />
                 </div>
-                <UploadResult />
               </div>
             </div>
 
-            {/* Student List Box - GLASSMORPHISM STYLE */}
-            <div style={{ 
-              maxWidth: '800px', 
-              margin: '35px auto 0', 
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              backdropFilter: 'blur(10px)',
-              padding: '25px', 
-              borderRadius: '20px', 
-              boxShadow: '0 10px 40px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03)',
-              border: '1px solid rgba(255,255,255,0.8)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                <span style={{ fontSize: '22px' }}>📚</span>
-                <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>Student List</h3>
+            <div style={{ maxWidth: '800px', margin: '30px auto 0', background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', padding: '25px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(67, 233, 123, 0.4)', color: 'white' }}>
+              <h3 style={{ margin: '0 0 15px', fontSize: '20px' }}>📚 Student List</h3>
+              <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '15px', padding: '15px' }}>
+                <StudentList />
               </div>
-              <StudentList />
             </div>
           </>
         )}
