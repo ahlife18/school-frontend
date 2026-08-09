@@ -18,7 +18,7 @@ function SchoolSignUp() {
     try {
       const db = getFirestore(getApp());
       
-      // Create the school document with a unique Auto-ID
+      // ✅ Create the school document
       const schoolRef = await addDoc(collection(db, 'schools'), {
         schoolName,
         adminEmail,
@@ -33,6 +33,7 @@ function SchoolSignUp() {
       setSchoolLink(link);
       setMessage('✅ School registered successfully! Share this link with the school.');
     } catch (error) {
+      console.error('Firestore Error:', error);
       setMessage('❌ Error: ' + error.message);
     } finally {
       setLoading(false);

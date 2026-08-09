@@ -1,19 +1,15 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// 🔥 REPLACE THIS WITH THE EXACT CONFIG FROM YOUR FIREBASE CONSOLE
 const firebaseConfig = {
-  apiKey: "AIzaSyAnnXly-yczloOlBF9xQpYYx8Unk_Sco6Y",
-  authDomain: "smsp-7948b.firebaseapp.com",
-  projectId: "smsp-7948b",
-  storageBucket: "smsp-7948b.firebasestorage.app",
-  messagingSenderId: "56201683459",
-  appId: "1:56201683459:web:03910a532e2bdbb7b36436",
-  measurementId: "G-D8RY9GGSFK"
+  apiKey: "AIzaSyANnXIy-yczLOlBF9xOs-netc",
+  authDomain: "school-frontend-puce-three.firebaseapp.com",
+  projectId: "school-frontend-puce-three",
+  storageBucket: "school-frontend-puce-three.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdef123456"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-// Export the auth object (THIS IS THE CRITICAL LINE)
 export const auth = getAuth(app);
