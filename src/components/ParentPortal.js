@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../services/api';
 
 function ParentPortal() {
@@ -8,9 +8,26 @@ function ParentPortal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
+  const [schoolId, setSchoolId] = useState('');
+
+  // ✅ Grab the schoolId from the URL when the component loads
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('schoolId');
+    if (id) {
+      setSchoolId(id);
+    } else {
+      setError('❌ No school ID found. Please use a valid school link.');
+    }
+  }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    if (!schoolId) {
+      setError('❌ School ID is missing. Please ensure you are using a valid school link.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setStudent(null);
@@ -18,12 +35,12 @@ function ParentPortal() {
     setSearched(false);
 
     try {
-      // Fetch student info
-      const studentRes = await api.get(`/api/student-by-roll/${rollNo}`);
+      // ✅ Fetch student info (pass schoolId as a query parameter)
+      const studentRes = await api.get(`/api/student-by-roll/${rollNo}?schoolId=${schoolId}`);
       setStudent(studentRes.data);
       
-      // Fetch results for this roll number
-      const resultsRes = await api.get(`/api/results/roll/${rollNo}`);
+      // ✅ Fetch results (pass schoolId as a query parameter)
+      const resultsRes = await api.get(`/api/results/roll/${rollNo}?schoolId=${schoolId}`);
       setResults(resultsRes.data);
       
       setSearched(true);
@@ -31,7 +48,8 @@ function ParentPortal() {
       if (error.response && error.response.status === 404) {
         setError('No student found with this roll number.');
       } else {
-        setError('Something went wrong. Please try again.');
+        const message = error.response?.data?.error || error.message || 'Something went wrong.';
+        setError('❌ ' + message);
       }
       setSearched(true);
     } finally {
@@ -89,13 +107,25 @@ function ParentPortal() {
       </form>
 
       {error && (
-        <div style={{ padding: '15px', backgroundColor: '#fee', color: '#c00', borderRadius: '10px', marginBottom: '20px', textAlign: 'center' }}>
-          ❌ {error}
+        <div style={{
+          padding: '15px',
+          backgroundColor: '#fee',
+          color: '#c00',
+          borderRadius: '10px',
+          marginBottom: '20px',
+          textAlign: 'center'
+        }}>
+          {error}
         </div>
       )}
 
       {student && (
-        <div style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '15px', border: '1px solid #eee' }}>
+        <div style={{
+          padding: '20px',
+          backgroundColor: '#f9f9f9',
+          borderRadius: '15px',
+          border: '1px solid #eee'
+        }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
             <div>
               <h3 style={{ margin: 0, color: '#2c3e50' }}>{student.name}</h3>
@@ -103,7 +133,14 @@ function ParentPortal() {
                 Class: {student.class} | Roll: {student.rollNo}
               </p>
             </div>
-            <span style={{ padding: '6px 12px', backgroundColor: '#27ae60', color: 'white', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
+            <span style={{
+              padding: '6px 12px',
+              backgroundColor: '#27ae60',
+              color: 'white',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}>
               ✅ Confirmed
             </span>
           </div>
