@@ -1,14 +1,13 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
-// 🔥 REPLACE THIS WITH THE EXACT CONFIG FROM YOUR FIREBASE CONSOLE
 const firebaseConfig = {
-  apiKey: "AIzaSyANnXIy-yczLOlBF9xOs-netc",
-  authDomain: "school-frontend-puce-three.firebaseapp.com",
-  projectId: "school-frontend-puce-three",
-  storageBucket: "school-frontend-puce-three.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef123456"
+  apiKey: "AIzaSyAnnXly-yczloOlBF9xQpYYx8Unk_Sco6Y",
+  authDomain: "smsp-7948b.firebaseapp.com",
+  projectId: "smsp-7948b",
+  storageBucket: "smsp-7948b.firebasestorage.app",
+  messagingSenderId: "56201683459",
+  appId: "1:56201683459:web:03910a532e2bdb7b36436"
 };
 
 const app = initializeApp(firebaseConfig);
