@@ -26,29 +26,12 @@ function App() {
     }
   }, [setSchoolId]);
 
-  const handleLogin = (user) => {
-    setUser(user);
-    setIsPrincipal(false);
-    setView('dashboard');
-  };
-
-  const handlePrincipalLogin = (user) => {
-    setUser(user);
-    setIsPrincipal(true);
-    setView('dashboard');
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    setIsPrincipal(false);
-    setView('dashboard');
-  };
-
-  // ✅ If no schoolId is found and user is not logged in, redirect to Sign-Up
+  // ✅ FIXED: Only redirect to Sign-Up if we are on the root path (/) and have no schoolId
   const params = new URLSearchParams(window.location.search);
   const schoolIdFromUrl = params.get('schoolId');
 
-  if (!schoolIdFromUrl && !user) {
+  // ⚠️ ONLY redirect if we are on the homepage (/) and missing schoolId
+  if (window.location.pathname === '/' && !schoolIdFromUrl && !user) {
     return <SchoolSignUp />;
   }
 
