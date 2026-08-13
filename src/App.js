@@ -8,7 +8,7 @@ import PrincipalDashboard from './components/PrincipalDashboard';
 import ParentPortal from './components/ParentPortal';
 import UploadResult from './components/UploadResult';
 import SubscriptionManager from './components/SubscriptionManager';
-import SchoolSignUp from './components/SchoolSignUp'; // ✨ NEW IMPORT
+import SchoolSignUp from './components/SchoolSignUp';
 import { useSchool } from './context/SchoolContext';
 
 function App() {
@@ -26,11 +26,29 @@ function App() {
     }
   }, [setSchoolId]);
 
-  // ✅ FIXED: Only redirect to Sign-Up if we are on the root path (/) and have no schoolId
+  // ✅ These functions were MISSING and causing the build error!
+  const handleLogin = (user) => {
+    setUser(user);
+    setIsPrincipal(false);
+    setView('dashboard');
+  };
+
+  const handlePrincipalLogin = (user) => {
+    setUser(user);
+    setIsPrincipal(true);
+    setView('dashboard');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setIsPrincipal(false);
+    setView('dashboard');
+  };
+
+  // ✅ FIXED: Only redirect to Sign-Up if on root path (/) with no schoolId
   const params = new URLSearchParams(window.location.search);
   const schoolIdFromUrl = params.get('schoolId');
 
-  // ⚠️ ONLY redirect if we are on the homepage (/) and missing schoolId
   if (window.location.pathname === '/' && !schoolIdFromUrl && !user) {
     return <SchoolSignUp />;
   }
